@@ -21,7 +21,7 @@ fun Project.unzipTask(
     target: File,
     zipFilename: String,
     downloadTask: Task
-) = tasks.register<Copy>("unzip-${zipFilename}-from-${zipFile.name}") {
+) = tasks.register<Copy>("unzip-${zipFilename.replace("/", "-")}-from-${zipFile.name}") {
     onlyIf { !target.exists() }
     from(zipTree(zipFile))
     include(zipFilename)

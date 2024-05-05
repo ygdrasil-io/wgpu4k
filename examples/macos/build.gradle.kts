@@ -1,3 +1,5 @@
+import io.ygdrasil.configureDownloadTasks
+
 plugins {
     id(libs.plugins.kotlinMultiplatform.get().pluginId)
 }
@@ -22,7 +24,16 @@ kotlin {
         else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
     }
 
-    nativeTarget.apply {
+
+    with(nativeTarget) {
+
+        /*val main by compilations.getting {
+
+            cinterops.create("glfw") {
+                header(buildNativeResourcesDirectory.resolve("glfw3.h"))
+            }
+        }*/
+
         binaries {
             executable {
                 entryPoint = "main"
@@ -46,6 +57,21 @@ kotlin {
             )
         }
 
+    }
+}
+
+val resourcesDirectory = project.file("src").resolve("jvmMain").resolve("resources")
+
+val buildNativeResourcesDirectory = project.file("build").resolve("native")
+
+
+
+configureDownloadTasks {
+    baseUrl = "https://github.com/glfw/glfw/releases/download/3.3.10/"
+
+    download("glfw-3.3.10.bin.MACOS.zip") {
+        extract("glfw3.h", buildNativeResourcesDirectory.resolve("glfw3.h"))
+        extract("lib-universal/libglfw3.a", buildNativeResourcesDirectory.resolve("darwin").resolve("libglfw3.a"))
     }
 }
 

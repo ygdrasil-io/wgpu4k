@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.gradle.tasks.CInteropProcess
 import java.io.File
 
 
-fun Project.wathever(action: DSL.() -> Unit) {
+fun Project.configureDownloadTasks(action: DSL.() -> Unit) {
     action(DSL(this))
 }
 

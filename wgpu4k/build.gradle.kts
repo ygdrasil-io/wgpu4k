@@ -1,6 +1,7 @@
 import de.undercouch.gradle.tasks.download.Download
 import io.github.krakowski.jextract.JextractTask
 import io.ygdrasil.wathever
+import io.ygdrasil.configureDownloadTasks
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -68,7 +69,6 @@ kotlin {
                     header(buildNativeResourcesDirectory.resolve("wgpu.h"))
                 }
             }
-
         }
     }
 
@@ -129,7 +129,7 @@ tasks {
 
 val resourcesDirectory = project.file("src").resolve("jvmMain").resolve("resources")
 
-wathever {
+configureDownloadTasks {
     baseUrl = "https://github.com/gfx-rs/wgpu-native/releases/download/${libs.versions.wgpu.get()}/"
 
     download("wgpu-macos-aarch64-release.zip") {
