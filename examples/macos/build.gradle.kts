@@ -1,4 +1,6 @@
+import de.undercouch.gradle.tasks.download.Download
 import io.ygdrasil.configureDownloadTasks
+import org.jetbrains.kotlin.com.google.common.io.Files
 
 plugins {
     id(libs.plugins.kotlinMultiplatform.get().pluginId)
@@ -12,6 +14,10 @@ val commonResourcesFile = getCommonProject()
 
 assert(commonResourcesFile.isDirectory) { "$commonResourcesFile is not a directory" }
 assert(commonResourcesFile.isNotEmpty) { "$commonResourcesFile is empty" }
+
+val resourcesDirectory = project.file("src").resolve("jvmMain").resolve("resources")
+
+val buildNativeResourcesDirectory = project.file("build").resolve("native")
 
 kotlin {
 
@@ -27,12 +33,12 @@ kotlin {
 
     with(nativeTarget) {
 
-        /*val main by compilations.getting {
+        val main by compilations.getting {
 
             cinterops.create("glfw") {
                 header(buildNativeResourcesDirectory.resolve("glfw3.h"))
             }
-        }*/
+        }
 
         binaries {
             executable {
@@ -60,9 +66,7 @@ kotlin {
     }
 }
 
-val resourcesDirectory = project.file("src").resolve("jvmMain").resolve("resources")
 
-val buildNativeResourcesDirectory = project.file("build").resolve("native")
 
 
 
@@ -70,9 +74,24 @@ configureDownloadTasks {
     baseUrl = "https://github.com/glfw/glfw/releases/download/3.3.10/"
 
     download("glfw-3.3.10.bin.MACOS.zip") {
-        extract("glfw3.h", buildNativeResourcesDirectory.resolve("glfw3.h"))
-        extract("lib-universal/libglfw3.a", buildNativeResourcesDirectory.resolve("darwin").resolve("libglfw3.a"))
+        extract("**/include/GLFW/glfw3.h", buildNativeResourcesDirectory.resolve("glfw3.h")).doLast {
+            Files.move(buildNativeResourcesDirectory.resolve("glfw-3.3.10.bin.MACOS").resolve("include").resolve("GLFW").resolve("glfw3.h"), buildNativeResourcesDirectory.resolve("glfw3.h"))
+            buildNativeResourcesDirectory.resolve("glfw-3.3.10.bin.MACOS").deleteRecursively()
+        }
+        extract("**/lib-universal/libglfw3.a", buildNativeResourcesDirectory.resolve("darwin").resolve("libglfw3.a")).doLast {
+            Files.move(
+                buildNativeResourcesDirectory.resolve("darwin").resolve("glfw-3.3.10.bin.MACOS").resolve("lib-universal")
+                    .resolve("libglfw3.a"), buildNativeResourcesDirectory.resolve("darwin").resolve("libglfw3.a")
+            )
+            buildNativeResourcesDirectory.resolve("darwin").resolve("glfw-3.3.10.bin.MACOS").deleteRecursively()
+        }
     }
+}
+
+
+tasks.create<Download>("downloadFile") {
+    src ("https://github.com/glfw/glfw/releases/download/3.3.10/glfw-3.3.10.bin.MACOS.zip")
+    dest(layout.buildDirectory)
 }
 
 fun getCommonProject() = projects.examples.common.identityPath.path

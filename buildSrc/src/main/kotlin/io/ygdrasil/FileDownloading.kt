@@ -7,30 +7,28 @@ import org.gradle.api.tasks.Copy
 import org.gradle.kotlin.dsl.register
 import java.io.File
 
-
-data class NativeLibrary(val remoteFile: String, val extractedFiles: List<Pair<File, String>>)
-
-fun nativeLibrary(remoteFile: String, extractedFiles: List<Pair<File, String>>)
-        = NativeLibrary(remoteFile, extractedFiles)
-
-fun nativeLibrary(remoteFile: String, targetFile: File,  zipFileName: String)
-        = NativeLibrary(remoteFile, listOf(targetFile to zipFileName))
-
 fun Project.unzipTask(
     zipFile: File,
     target: File,
-    zipFilename: String,
+    antFilename: String,
     downloadTask: Task
-) = tasks.register<Copy>("unzip-${zipFilename.replace("/", "-")}-from-${zipFile.name}") {
-    onlyIf { !target.exists() }
-    from(zipTree(zipFile))
-    include(zipFilename)
-    into(target.parent)
-    rename { fileName ->
-        fileName.replace(zipFilename, target.name)
-    }
-    dependsOn(downloadTask)
-}.get()
+): Copy {
+
+    val zipFilename = antFilename.substringAfterLast("/")
+        .substringAfterLast("\\")
+
+    return tasks.register<Copy>("unzip-$zipFilename-from-${zipFile.name}") {
+        onlyIf { !target.exists() }
+        from(zipTree(zipFile))
+        include(antFilename)
+        into(target.parent)
+        rename { fileName ->
+            fileName.replace(zipFilename, target.name)
+        }
+        includeEmptyDirs = false
+        dependsOn(downloadTask)
+    }.get()
+}
 
 
 fun Project.downloadInto(baseUrl: String, fileName: String, target: File): Task {

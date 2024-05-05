@@ -16,7 +16,7 @@ import platform.foundation.width
 val windowStyle = NSWindowStyleMaskTitled or NSWindowStyleMaskMiniaturizable or
         NSWindowStyleMaskClosable or NSWindowStyleMaskResizable or NSBackingStoreBuffered
 
-fun main() {
+fun main2() {
     Application("hello")
         .run()
 

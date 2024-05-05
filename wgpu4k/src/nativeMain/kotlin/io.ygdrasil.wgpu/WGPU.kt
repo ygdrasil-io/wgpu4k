@@ -9,7 +9,7 @@ import webgpu.*
 
 private val adapterState = MutableStateFlow<WGPUAdapter?>(null)
 
-class WGPU(val handler: WGPUInstance) {
+class WGPU(val handler: WGPUInstance): AutoCloseable {
 
     fun requestAdapter(
         renderingContext: RenderingContext,
@@ -65,5 +65,9 @@ class WGPU(val handler: WGPUInstance) {
 
             return descriptor
         }
+    }
+
+    override fun close() {
+        wgpuInstanceRelease(handler)
     }
 }

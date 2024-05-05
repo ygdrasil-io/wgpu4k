@@ -2,6 +2,7 @@ package io.ygdrasil
 
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.tasks.Copy
 import org.gradle.kotlin.dsl.withType
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.jetbrains.kotlin.gradle.tasks.CInteropProcess
@@ -31,7 +32,7 @@ class DSL internal constructor(val project: Project) {
         private val zipFile: File
     ) {
 
-        fun extract(fileName: String, target: File) {
+        fun extract(fileName: String, target: File): Copy {
             val unzipTask = project.unzipTask(zipFile, target, fileName, downloadTask)
 
             project.tasks.withType<ProcessResources> {
@@ -44,6 +45,8 @@ class DSL internal constructor(val project: Project) {
                     dependsOn(unzipTask)
                 }
             }
+
+            return unzipTask
         }
 
     }

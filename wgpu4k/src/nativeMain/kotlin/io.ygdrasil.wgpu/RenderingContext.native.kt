@@ -32,16 +32,16 @@ actual class RenderingContext(
         wgpuSurfacePresent(handler)
     }
 
-    fun computeSurfaceCapabilities(adapter: Adapter) {
-        val surfaceCapabilities = cValue<WGPUSurfaceCapabilities>()
-        wgpuSurfaceGetCapabilities(handler, adapter.handler, surfaceCapabilities)
+    fun computeSurfaceCapabilities(adapter: Adapter) = memScoped {
+        val surfaceCapabilities = alloc<WGPUSurfaceCapabilities>()
+        wgpuSurfaceGetCapabilities(handler, adapter.handler, surfaceCapabilities.ptr)
 
-        _textureFormat = (surfaceCapabilities.useContents { formats }
+        _alphaMode = surfaceCapabilities.alphaModes
+            ?.get(0) ?: error("fail to get alphaMode at index 0")
+        _textureFormat = (surfaceCapabilities.formats
             ?.get(0)?.toInt() ?: error("fail to get format at index 0"))
             .let { TextureFormat.of(it) ?: error("TextureFormat not found with value $it") }
 
-        _alphaMode = surfaceCapabilities.useContents { alphaModes }
-            ?.get(0) ?: error("fail to get alphaMode at index 0")
     }
 
     actual fun configure(canvasConfiguration: CanvasConfiguration) {
