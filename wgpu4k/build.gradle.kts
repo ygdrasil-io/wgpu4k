@@ -1,7 +1,6 @@
 import de.undercouch.gradle.tasks.download.Download
 import io.github.krakowski.jextract.JextractTask
 
-
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
 	alias(libs.plugins.kotest)
@@ -30,6 +29,8 @@ val jextract = tasks.withType<JextractTask> {
 
 
 
+val buildNativeResourcesDirectory = project.file("build").resolve("native")
+
 kotlin {
 
     js {
@@ -40,9 +41,25 @@ kotlin {
     jvm {
         withJava()
     }
-	macosArm64()
-	macosX64()
-	mingwX64()
+
+    val target = setOf(
+        macosArm64(),
+        macosX64(),
+        /*mingwX64(),
+        linuxX64(),
+        linuxArm64()*/
+    )
+
+    target.forEach {
+        with(it) {
+            val main by compilations.getting {
+                cinterops.create("webgpu") {
+                    header(buildNativeResourcesDirectory.resolve("wgpu.h"))
+                }
+            }
+
+        }
+    }
 
     sourceSets {
 
@@ -103,68 +120,83 @@ val resourcesDirectory = project.file("src").resolve("jvmMain").resolve("resourc
 val zipBuildDirectory = project.file("build").resolve("zip")
 val baseUrl = "https://github.com/gfx-rs/wgpu-native/releases/download/${libs.versions.wgpu.get()}/"
 val fileToDownload = listOf(
-	NativeLibrary(
-		"wgpu-macos-aarch64-release.zip",
-		resourcesDirectory.resolve("darwin-aarch64").resolve("libWGPU.dylib"),
-		"libwgpu_native.dylib"
-	),
-	NativeLibrary(
-		"wgpu-macos-x86_64-release.zip",
-		resourcesDirectory.resolve("darwin-x86-64").resolve("libWGPU.dylib"),
-		"libwgpu_native.dylib"
-	),
-	NativeLibrary(
-		"wgpu-windows-x86_64-release.zip",
-		resourcesDirectory.resolve("win32-x86-64").resolve("WGPU.dll"),
-		"wgpu_native.dll"
-	),
-	NativeLibrary(
-		"wgpu-linux-x86_64-release.zip",
-		resourcesDirectory.resolve("linux-x86-64").resolve("libWGPU.so"),
-		"libwgpu_native.so"
-	),
-	NativeLibrary(
-		"wgpu-linux-aarch64-release.zip",
-		resourcesDirectory.resolve("linux-aarch64").resolve("libWGPU.so"),
-		"libwgpu_native.so"
-	),
-).forEach { (fileName, target, zipFilename) ->
-	val zipFile = zipBuildDirectory.resolve(fileName)
-	val downloadTask = downloadInto(fileName, zipFile)
-	val unzipTask = unzipTask(zipFile, target, zipFilename, downloadTask)
+    NativeLibrary(
+        "wgpu-macos-aarch64-release.zip",
+        listOf(
+            resourcesDirectory.resolve("darwin-aarch64").resolve("libWGPU.dylib") to "libwgpu_native.dylib",
+            buildNativeResourcesDirectory.resolve("webgpu.h") to "webgpu.h",
+            buildNativeResourcesDirectory.resolve("wgpu.h") to "wgpu.h",
+            buildNativeResourcesDirectory.resolve("darwin-aarch64").resolve("libWGPU.a") to "libwgpu_native.a"
+        )
+    ),
+    NativeLibrary(
+        "wgpu-macos-x86_64-release.zip",
+        listOf(
+            resourcesDirectory.resolve("darwin-x86-64").resolve("libWGPU.dylib") to "libwgpu_native.dylib",
+            buildNativeResourcesDirectory.resolve("webgpu.h") to "webgpu.h",
+            buildNativeResourcesDirectory.resolve("wgpu.h") to "wgpu.h",
+            buildNativeResourcesDirectory.resolve("darwin-x64").resolve("libWGPU.a") to "libwgpu_native.a"
+        )
+    ),
+    nativeLibrary(
+        "wgpu-windows-x86_64-release.zip",
+        resourcesDirectory.resolve("win32-x86-64").resolve("WGPU.dll"),
+        "wgpu_native.dll"
+    ),
+    nativeLibrary(
+        "wgpu-linux-x86_64-release.zip",
+        resourcesDirectory.resolve("linux-x86-64").resolve("libWGPU.so"),
+        "libwgpu_native.so"
+    ),
+    nativeLibrary(
+        "wgpu-linux-aarch64-release.zip",
+        resourcesDirectory.resolve("linux-aarch64").resolve("libWGPU.so"),
+        "libwgpu_native.so"
+    ),
+).forEach { (fileName, extractedFiles) ->
+    val zipFile = zipBuildDirectory.resolve(fileName)
+    val downloadTask = downloadInto(fileName, zipFile)
 
-	tasks.withType<ProcessResources>() {
-		dependsOn(unzipTask)
-	}
+    extractedFiles.forEach { extractedFile ->
+        val (target, zipFilename) = extractedFile
+        val unzipTask = unzipTask(zipFile, target, zipFilename, downloadTask)
+
+        tasks.withType<ProcessResources>() {
+            dependsOn(unzipTask)
+        }
+    }
 }
 
 fun downloadInto(fileName: String, target: File): Task {
-	val url = "$baseUrl$fileName"
-	val taskName = "downloadFile-$fileName"
-	return tasks.register<Download>(taskName) {
-		onlyIf { !target.exists() }
-		src(url)
-		dest(target)
-	}.get()
+    val url = "$baseUrl$fileName"
+    val taskName = "downloadFile-$fileName"
+    return tasks.register<Download>(taskName) {
+        onlyIf { !target.exists() }
+        src(url)
+        dest(target)
+    }.get()
 }
 
 fun unzipTask(
-	zipFile: File,
-	target: File,
-	zipFilename: String,
-	downloadTask: Task
-) = tasks.register<Copy>("unzip-${zipFile.name}") {
-	onlyIf { !target.exists() }
-	from(zipTree(zipFile))
-	include(zipFilename)
-	into(target.parent)
-	rename { fileName ->
-		fileName.replace(zipFilename, target.name)
-	}
-	dependsOn(downloadTask)
+    zipFile: File,
+    target: File,
+    zipFilename: String,
+    downloadTask: Task
+) = tasks.register<Copy>("unzip-${zipFile.name}-from-${zipFilename}") {
+    onlyIf { !target.exists() }
+    from(zipTree(zipFile))
+    include(zipFilename)
+    into(target.parent)
+    rename { fileName ->
+        fileName.replace(zipFilename, target.name)
+    }
+    dependsOn(downloadTask)
 }.get()
 
-data class NativeLibrary(val remoteFile: String, val targetFile: File, val zipFileName: String)
+fun nativeLibrary(remoteFile: String, targetFile: File,  zipFileName: String)
+    = NativeLibrary(remoteFile, listOf(targetFile to zipFileName))
+
+data class NativeLibrary(val remoteFile: String, val extractedFiles: List<Pair<File, String>>)
 
 tasks.named<Test>("jvmTest") {
 	useJUnitPlatform()
