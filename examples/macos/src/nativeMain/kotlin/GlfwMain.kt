@@ -2,8 +2,7 @@
 
 import cnames.structs.GLFWwindow
 import glfw.*
-import io.ygdrasil.wgpu.RenderingContext
-import io.ygdrasil.wgpu.WGPU
+import io.ygdrasil.wgpu.*
 import io.ygdrasil.wgpu.WGPU.Companion.createInstance
 import kotlinx.cinterop.*
 import kotlinx.coroutines.runBlocking
@@ -68,6 +67,63 @@ suspend fun run() {
 
     renderingContext.computeSurfaceCapabilities(adapter)
 
+    renderingContext.configure(
+        CanvasConfiguration(
+            device = device
+        )
+    )
+
+    val renderPipeline = device.createRenderPipeline(
+        RenderPipelineDescriptor(
+            vertex = RenderPipelineDescriptor.VertexState(
+                module = device.createShaderModule(
+                    ShaderModuleDescriptor(
+                        code = triangleVertexShader
+                    )
+                )
+            ),
+            fragment = RenderPipelineDescriptor.FragmentState(
+                module = device.createShaderModule(
+                    ShaderModuleDescriptor(
+                        code = redFragmentShader
+                    )
+                ),
+                targets = arrayOf(
+                    RenderPipelineDescriptor.FragmentState.ColorTargetState(
+                        format = renderingContext.textureFormat
+                    )
+                )
+            )
+        )
+    )
+
+    // Clear the canvas with a render pass
+    val encoder = device.createCommandEncoder()
+
+    val texture = renderingContext.getCurrentTexture()
+
+    val renderPassEncoder = encoder.beginRenderPass(
+        RenderPassDescriptor(
+            colorAttachments = arrayOf(
+                RenderPassDescriptor.ColorAttachment(
+                    view =  texture.createView(),
+                    loadOp = LoadOp.clear,
+                    clearValue = arrayOf(0, 0, 0, 1.0),
+                    storeOp = StoreOp.store
+                )
+            )
+        )
+    )
+
+    renderPassEncoder.setPipeline(renderPipeline)
+    renderPassEncoder.draw(3)
+    renderPassEncoder.end()
+
+    val commandBuffer = encoder.finish()
+
+    device.queue.submit(arrayOf(commandBuffer))
+
+    renderingContext.present()
     /*val assetManager = runBlocking { genericAssetManager() }
 
     val application = object : Application(
