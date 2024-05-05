@@ -1,7 +1,6 @@
 import de.undercouch.gradle.tasks.download.Download
 import io.github.krakowski.jextract.JextractTask
 import io.ygdrasil.wathever
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompileCommon
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -35,6 +34,14 @@ val buildNativeResourcesDirectory = project.file("build").resolve("native")
 
 kotlin {
 
+    targets.all {
+        compilations.all {
+            compilerOptions.configure {
+                freeCompilerArgs.add("-Xexpect-actual-classes")
+            }
+        }
+    }
+
     js {
         binaries.executable()
         browser()
@@ -52,9 +59,11 @@ kotlin {
         linuxArm64()*/
     )
 
+
     target.forEach {
         with(it) {
             val main by compilations.getting {
+
                 cinterops.create("webgpu") {
                     header(buildNativeResourcesDirectory.resolve("wgpu.h"))
                 }
@@ -163,3 +172,5 @@ tasks.named<Test>("jvmTest") {
 		exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
 	}
 }
+
+

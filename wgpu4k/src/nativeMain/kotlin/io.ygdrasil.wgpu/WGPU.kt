@@ -21,7 +21,7 @@ class WGPU(val handler: WGPUInstance) {
         }
 
         val handleRequestAdapter:WGPURequestAdapterCallback =
-            staticCFunction<WGPURequestAdapterStatus, WGPUAdapter, CPointer<ByteVar>?, COpaquePointer, Unit> { status, adapter, message, param4 ->
+            staticCFunction<WGPURequestAdapterStatus, WGPUAdapter, CPointer<ByteVar>?, COpaquePointer, Unit> { status, adapter, message, _ ->
                 if (status == WGPURequestAdapterStatus_Success) {
                     adapterState.update { adapter }
                 } else {

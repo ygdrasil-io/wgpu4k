@@ -14,7 +14,7 @@ actual class Adapter(val handler: WGPUAdapter) : AutoCloseable {
     actual suspend fun requestDevice(): Device? {
 
         val handleRequestDevice:WGPURequestDeviceCallback =
-            staticCFunction<WGPURequestDeviceStatus, WGPUDevice?, CPointer<ByteVar>?, COpaquePointer?, Unit> { status, device, message, param4 ->
+            staticCFunction<WGPURequestDeviceStatus, WGPUDevice?, CPointer<ByteVar>?, COpaquePointer?, Unit> { status, device, message, _ ->
                 if (status == WGPURequestDeviceStatus_Success) {
                     deviceState.update { device }
                 } else {

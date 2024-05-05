@@ -38,7 +38,7 @@ actual class RenderingContext(
 
         _textureFormat = (surfaceCapabilities.useContents { formats }
             ?.get(0)?.toInt() ?: error("fail to get format at index 0"))
-            ?.let { TextureFormat.of(it) ?: error("TextureFormat not found with value $it") }
+            .let { TextureFormat.of(it) ?: error("TextureFormat not found with value $it") }
 
         _alphaMode = surfaceCapabilities.useContents { alphaModes }
             ?.get(0) ?: error("fail to get alphaMode at index 0")
