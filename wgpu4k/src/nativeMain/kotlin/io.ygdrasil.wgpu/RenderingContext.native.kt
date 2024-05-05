@@ -10,7 +10,8 @@ actual class RenderingContext(
     private val sizeProvider: () -> Pair<Int, Int>
 ) : AutoCloseable {
 
-    private val surfaceCapabilities = cValue<WGPUSurfaceCapabilities>()
+    private var _textureFormat:TextureFormat? = null
+    private var _alphaMode:UInt? = null
 
     actual val width: Int
         get() = sizeProvider().first
@@ -18,9 +19,7 @@ actual class RenderingContext(
         get() = sizeProvider().second
 
     actual val textureFormat: TextureFormat by lazy {
-        surfaceCapabilities.useContents { formats }?.get(0)?.toInt()
-            ?.let { TextureFormat.of(it) ?: error("texture format not found") }
-            ?: error("call first computeSurfaceCapabilities")
+        _textureFormat ?: error("call first computeSurfaceCapabilities")
     }
 
     actual fun getCurrentTexture(): Texture {
@@ -34,12 +33,20 @@ actual class RenderingContext(
     }
 
     fun computeSurfaceCapabilities(adapter: Adapter) {
+        val surfaceCapabilities = cValue<WGPUSurfaceCapabilities>()
         wgpuSurfaceGetCapabilities(handler, adapter.handler, surfaceCapabilities)
+
+        _textureFormat = (surfaceCapabilities.useContents { formats }
+            ?.get(0)?.toInt() ?: error("fail to get format at index 0"))
+            ?.let { TextureFormat.of(it) ?: error("TextureFormat not found with value $it") }
+
+        _alphaMode = surfaceCapabilities.useContents { alphaModes }
+            ?.get(0) ?: error("fail to get alphaMode at index 0")
     }
 
     actual fun configure(canvasConfiguration: CanvasConfiguration) {
 
-        if (surfaceCapabilities.useContents { formats } == null) error("call computeSurfaceCapabilities(adapter: Adapter) before configure")
+        if (_textureFormat == null) error("call computeSurfaceCapabilities(adapter: Adapter) before configure")
 
         wgpuSurfaceConfigure(handler, canvasConfiguration.convert())
     }
@@ -51,9 +58,9 @@ actual class RenderingContext(
     private fun CanvasConfiguration.convert(): CValue<WGPUSurfaceConfiguration> = cValue<WGPUSurfaceConfiguration>() {
         device = this@convert.device.handler
         usage = this@convert.usage.toUInt()
-        format = (this@convert.format?.value ?: textureFormat.value).toUInt()
+        format = (this@convert.format?.value ?: _textureFormat!!.value).toUInt()
         presentMode = WGPUPresentMode_Fifo
-        alphaMode = this@convert.alphaMode?.value?.toUInt() ?: surfaceCapabilities.useContents {alphaModes }?.get(0) ?: error("")
+        alphaMode = this@convert.alphaMode?.value?.toUInt() ?: _alphaMode ?: error("")
         width = this@RenderingContext.width.toUInt()
         height = this@RenderingContext.height.toUInt()
     }
