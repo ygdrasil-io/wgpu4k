@@ -1,33 +1,61 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package io.ygdrasil.wgpu
 
-actual class RenderingContext : AutoCloseable {
-    actual val width: Int
-        get() = TODO("Not yet implemented")
-    actual val height: Int
-        get() = TODO("Not yet implemented")
-    actual val textureFormat: TextureFormat
-        get() = TODO("Not yet implemented")
+import kotlinx.cinterop.*
+import webgpu.*
 
-    actual fun getCurrentTexture(): Texture {
-        TODO("Not yet implemented")
+actual class RenderingContext(
+    internal val handler: WGPUSurface,
+    private val sizeProvider: () -> Pair<Int, Int>
+) : AutoCloseable {
+
+    private val surfaceCapabilities = cValue<WGPUSurfaceCapabilities>()
+
+    actual val width: Int
+        get() = sizeProvider().first
+    actual val height: Int
+        get() = sizeProvider().second
+
+    actual val textureFormat: TextureFormat by lazy {
+        surfaceCapabilities.useContents { formats }?.get(0)?.toInt()
+            ?.let { TextureFormat.of(it) ?: error("texture format not found") }
+            ?: error("call first computeSurfaceCapabilities")
     }
 
-    /**
-     * Schedule this texture to be presented on the owning surface.
-     *
-     * Needs to be called after any work on the texture is scheduled via Queue::submit.
-     *
-     * Platform dependent behavior
-     * On Wayland, present will attach a wl_buffer to the underlying wl_surface and commit the new surface state. If it is desired to do things such as request a frame callback, scale the surface using the viewporter or synchronize other double buffered state, then these operations should be done before the call to present.
-     */
+    actual fun getCurrentTexture(): Texture {
+        val surfaceTexture = cValue<WGPUSurfaceTexture>()
+        wgpuSurfaceGetCurrentTexture(handler, surfaceTexture)
+        return Texture(surfaceTexture.useContents { texture } ?: error("no texture available"))
+    }
+
     actual fun present() {
+        wgpuSurfacePresent(handler)
+    }
+
+    fun computeSurfaceCapabilities(adapter: Adapter) {
+        wgpuSurfaceGetCapabilities(handler, adapter.handler, surfaceCapabilities)
     }
 
     actual fun configure(canvasConfiguration: CanvasConfiguration) {
+
+        if (surfaceCapabilities.useContents { formats } == null) error("call computeSurfaceCapabilities(adapter: Adapter) before configure")
+
+        wgpuSurfaceConfigure(handler, canvasConfiguration.convert())
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        wgpuSurfaceRelease(handler)
+    }
+
+    private fun CanvasConfiguration.convert(): CValue<WGPUSurfaceConfiguration> = cValue<WGPUSurfaceConfiguration>() {
+        device = this@convert.device.handler
+        usage = this@convert.usage.toUInt()
+        format = (this@convert.format?.value ?: textureFormat.value).toUInt()
+        presentMode = WGPUPresentMode_Fifo
+        alphaMode = this@convert.alphaMode?.value?.toUInt() ?: surfaceCapabilities.useContents {alphaModes }?.get(0) ?: error("")
+        width = this@RenderingContext.width.toUInt()
+        height = this@RenderingContext.height.toUInt()
     }
 
 }

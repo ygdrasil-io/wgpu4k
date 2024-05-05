@@ -1,10 +1,9 @@
 @file:OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 
+import io.ygdrasil.wgpu.RenderingContext
 import io.ygdrasil.wgpu.WGPU.Companion.createInstance
-import kotlinx.cinterop.BetaInteropApi
-import kotlinx.cinterop.CValue
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.autoreleasepool
+import kotlinx.cinterop.*
+import kotlinx.coroutines.runBlocking
 import platform.AppKit.*
 import platform.CoreGraphics.CGSize
 import platform.Foundation.NSMakeRect
@@ -15,6 +14,7 @@ import platform.Metal.MTLCreateSystemDefaultDevice
 import platform.Metal.MTLPixelFormatBGRA8Unorm_sRGB
 import platform.MetalKit.MTKView
 import platform.MetalKit.MTKViewDelegateProtocol
+import platform.QuartzCore.CAMetalLayer
 import platform.darwin.NSObject
 import platform.foundation.height
 import platform.foundation.width
@@ -23,9 +23,10 @@ val windowStyle = NSWindowStyleMaskTitled or NSWindowStyleMaskMiniaturizable or
         NSWindowStyleMaskClosable or NSWindowStyleMaskResizable or NSBackingStoreBuffered
 
 fun main() {
-
     Application("hello")
         .run()
+
+
 }
 
 class Application(
@@ -33,7 +34,6 @@ class Application(
 ) {
 
     fun run() {
-
         autoreleasepool {
             val application = NSApplication.sharedApplication()
 
@@ -46,15 +46,9 @@ class Application(
                 )
             }
             val window = NSWindow(windowRect, windowStyle, NSBackingStoreBuffered, false)
-            val device = MTLCreateSystemDefaultDevice() ?: error("fail to create device")
-            //val renderer = rendererProvider(device)
-            val mtkView = MTKView(window.frame, device).apply {
-                colorPixelFormat = MTLPixelFormatBGRA8Unorm_sRGB
-                clearColor = MTLClearColorMake(1.0, 0.0, 0.0, 1.0)
-            }
-
-            val wgpu = createInstance() ?: error("fail to wgpu instance")
-            println(wgpu)
+            window.contentView()?.setWantsLayer(true)
+            val layer = CAMetalLayer.layer()
+            window.contentView()?.setLayer(layer)
 
             application.delegate = object : NSObject(), NSApplicationDelegateProtocol {
 
@@ -70,22 +64,29 @@ class Application(
                 override fun applicationDidFinishLaunching(notification: NSNotification) {
                     println("applicationDidFinishLaunching")
 
-                    mtkView.delegate = object : NSObject(), MTKViewDelegateProtocol {
-                        override fun drawInMTKView(view: MTKView) {
-                            //renderer.drawOnView(view)
-                        }
-
-                        override fun mtkView(view: MTKView, drawableSizeWillChange: CValue<CGSize>) {
-
-                        }
-
-                    }
-
-                    window.setContentView(mtkView)
                     window.setTitle(windowTitle)
 
                     window.orderFrontRegardless()
                     window.center()
+
+
+                    val wgpu = createInstance() ?: error("fail to wgpu instance")
+                    val surface =
+                        wgpu.getSurfaceFromMetalLayer(interpretCPointer<COpaque>(layer.objcPtr())!!.reinterpret())
+                            ?: error("fail to get wgpu surface")
+
+
+                    val renderingContext = RenderingContext(surface) {
+                        window.frame.width.toInt() to window.frame.height.toInt()
+                    }
+
+                    val adapter = wgpu.requestAdapter(renderingContext)
+                        ?: error("fail to get adapter")
+
+                    val device =  runBlocking { adapter.requestDevice() }
+                        ?: error("fail to get device")
+
+                    renderingContext.computeSurfaceCapabilities(adapter)
                 }
 
                 override fun applicationWillTerminate(notification: NSNotification) {
@@ -94,6 +95,7 @@ class Application(
             }
 
             application.run()
+
         }
     }
 }

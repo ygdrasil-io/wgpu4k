@@ -1,6 +1,11 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package io.ygdrasil.wgpu
 
-actual class Texture: AutoCloseable {
+import kotlinx.cinterop.ExperimentalForeignApi
+import webgpu.WGPUTexture
+
+actual class Texture(val handler: WGPUTexture): AutoCloseable {
 
     actual val width: GPUIntegerCoordinateOut
         get() = TODO("not yet implemented")

@@ -1,6 +1,11 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package io.ygdrasil.wgpu
 
-actual class Device : AutoCloseable {
+import kotlinx.cinterop.ExperimentalForeignApi
+import webgpu.WGPUDevice
+
+actual class Device(val handler: WGPUDevice) : AutoCloseable {
     actual val queue: Queue
         get() = TODO("Not yet implemented")
 

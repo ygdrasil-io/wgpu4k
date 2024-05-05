@@ -3,9 +3,48 @@
 package io.ygdrasil.wgpu
 
 import kotlinx.cinterop.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import webgpu.*
 
+private val adapterState = MutableStateFlow<WGPUAdapter?>(null)
+
 class WGPU(val handler: WGPUInstance) {
+
+    fun requestAdapter(
+        renderingContext: RenderingContext,
+        powerPreference: WGPUPowerPreference = WGPUPowerPreference_Undefined
+    ): Adapter? {
+        val options = cValue<WGPURequestAdapterOptions> {
+            compatibleSurface = renderingContext.handler
+            this.powerPreference = powerPreference
+        }
+
+        val handleRequestAdapter:WGPURequestAdapterCallback =
+            staticCFunction<WGPURequestAdapterStatus, WGPUAdapter, CPointer<ByteVar>?, COpaquePointer, Unit> { status, adapter, message, param4 ->
+                if (status == WGPURequestAdapterStatus_Success) {
+                    adapterState.update { adapter }
+                } else {
+                    println("request_adapter status=$status message=${message?.toKStringFromUtf8()}\n")
+                }
+
+            }.reinterpret()
+
+        wgpuInstanceRequestAdapter(handler, options, handleRequestAdapter, null)
+
+        return adapterState.value?.let { Adapter(it) }
+    }
+
+    fun getSurfaceFromMetalLayer(metalLayer: COpaquePointer): WGPUSurface? = memScoped {
+        val surfaceDescriptor = cValue<WGPUSurfaceDescriptor> {
+            nextInChain = cValue<WGPUSurfaceDescriptorFromMetalLayer> {
+                chain.sType = WGPUSType_SurfaceDescriptorFromMetalLayer
+                layer = metalLayer
+            }.ptr.reinterpret()
+        }
+
+        return wgpuInstanceCreateSurface(handler, surfaceDescriptor)
+    }
 
     companion object {
 
@@ -17,14 +56,12 @@ class WGPU(val handler: WGPUInstance) {
         private fun MemScope.getDescriptor(backend: WGPUInstanceBackend?): CValue<WGPUInstanceDescriptor>? {
             if (backend == null) return null
 
-            val temp = cValue<WGPUInstanceExtras> {
-                chain.sType = WGPUSType_InstanceExtras
-                backends = backend
-            }
             val descriptor = cValue<WGPUInstanceDescriptor> {
-                nextInChain = temp.ptr.reinterpret()
+                nextInChain = cValue<WGPUInstanceExtras> {
+                    chain.sType = WGPUSType_InstanceExtras
+                    backends = backend
+                }.ptr.reinterpret()
             }
-
 
             return descriptor
         }
