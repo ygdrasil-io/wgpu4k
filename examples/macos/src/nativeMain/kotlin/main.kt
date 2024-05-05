@@ -20,7 +20,6 @@ fun main() {
     Application("hello")
         .run()
 
-
 }
 
 class Application(

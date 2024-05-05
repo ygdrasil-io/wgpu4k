@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
+    id(libs.plugins.kotlinMultiplatform.get().pluginId)
 }
 
 val commonResourcesFile = getCommonProject()
