@@ -5,15 +5,9 @@ import io.ygdrasil.wgpu.WGPU.Companion.createInstance
 import kotlinx.cinterop.*
 import kotlinx.coroutines.runBlocking
 import platform.AppKit.*
-import platform.CoreGraphics.CGSize
 import platform.Foundation.NSMakeRect
 import platform.Foundation.NSNotification
 import platform.Foundation.NSRect
-import platform.Metal.MTLClearColorMake
-import platform.Metal.MTLCreateSystemDefaultDevice
-import platform.Metal.MTLPixelFormatBGRA8Unorm_sRGB
-import platform.MetalKit.MTKView
-import platform.MetalKit.MTKViewDelegateProtocol
 import platform.QuartzCore.CAMetalLayer
 import platform.darwin.NSObject
 import platform.foundation.height
