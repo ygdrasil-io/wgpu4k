@@ -4,6 +4,7 @@ package io.ygdrasil.wgpu
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import webgpu.WGPUDevice
+import webgpu.wgpuDeviceCreateShaderModule
 
 actual class Device(val handler: WGPUDevice) : AutoCloseable {
     actual val queue: Queue
@@ -14,6 +15,7 @@ actual class Device(val handler: WGPUDevice) : AutoCloseable {
     }
 
     actual fun createShaderModule(descriptor: ShaderModuleDescriptor): ShaderModule {
+        wgpuDeviceCreateShaderModule()
         TODO("Not yet implemented")
     }
 
