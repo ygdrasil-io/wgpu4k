@@ -35,7 +35,6 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
       - name: Build & test
         run: |
-          gradle wrapper
           ./gradlew build check
       - name: Bundle the build report
         if: failure()
