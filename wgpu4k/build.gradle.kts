@@ -1,13 +1,10 @@
-import de.undercouch.gradle.tasks.download.Download
 import io.github.krakowski.jextract.JextractTask
-import io.ygdrasil.wathever
 import io.ygdrasil.configureDownloadTasks
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
+    id(libs.plugins.kotlin.multiplatform.get().pluginId)
 	alias(libs.plugins.kotest)
 	id("io.github.krakowski.jextract") version "0.5.0" apply false
-	alias(libs.plugins.download)
 }
 
 java {

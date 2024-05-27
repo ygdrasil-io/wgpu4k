@@ -13,16 +13,16 @@ actual class CommandEncoder : AutoCloseable {
     actual fun copyTextureToTexture(
         source: ImageCopyTexture,
         destination: ImageCopyTexture,
-        copySize: GPUIntegerCoordinates
+        copySize: Size3D
     ) {
         TODO("Not yet implemented")
     }
 
-    override fun close() {
+    actual fun beginComputePass(descriptor: ComputePassDescriptor?): ComputePassEncoder {
         TODO("Not yet implemented")
     }
 
-    actual fun beginComputePass(descriptor: ComputePassDescriptor?): ComputePassEncoder {
+    actual override fun close() {
         TODO("Not yet implemented")
     }
 }

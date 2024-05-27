@@ -1,7 +1,7 @@
 package io.ygdrasil.wgpu
 
 actual class BindGroup : AutoCloseable {
-    override fun close() {
+    actual override fun close() {
         TODO("Not yet implemented")
     }
 }

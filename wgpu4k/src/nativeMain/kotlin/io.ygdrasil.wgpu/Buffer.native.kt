@@ -18,7 +18,7 @@ actual class Buffer : AutoCloseable {
         TODO("not yet implemented")
     }
 
-    override fun close() {
+    actual override fun close() {
         TODO("Not yet implemented")
     }
 

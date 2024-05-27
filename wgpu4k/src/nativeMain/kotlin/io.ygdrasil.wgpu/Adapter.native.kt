@@ -28,7 +28,7 @@ actual class Adapter(val handler: WGPUAdapter) : AutoCloseable {
         return deviceState.value?.let { Device(it) }
     }
 
-    override fun close() {
+    actual override fun close() {
         wgpuAdapterRelease(handler)
     }
 }

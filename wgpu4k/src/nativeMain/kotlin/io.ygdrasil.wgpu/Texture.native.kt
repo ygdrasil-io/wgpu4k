@@ -28,7 +28,7 @@ actual class Texture(val handler: WGPUTexture): AutoCloseable {
         TODO("not yet implemented")
     }
 
-    override fun close() {
+    actual override fun close() {
         TODO("Not yet implemented")
     }
 }

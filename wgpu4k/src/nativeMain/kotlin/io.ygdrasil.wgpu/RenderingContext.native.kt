@@ -51,7 +51,7 @@ actual class RenderingContext(
         wgpuSurfaceConfigure(handler, canvasConfiguration.convert())
     }
 
-    override fun close() {
+    actual override fun close() {
         wgpuSurfaceRelease(handler)
     }
 

@@ -3,7 +3,7 @@ import io.ygdrasil.configureDownloadTasks
 import org.jetbrains.kotlin.com.google.common.io.Files
 
 plugins {
-    id(libs.plugins.kotlinMultiplatform.get().pluginId)
+    id(libs.plugins.kotlin.multiplatform.get().pluginId)
 }
 
 val commonResourcesFile = getCommonProject()

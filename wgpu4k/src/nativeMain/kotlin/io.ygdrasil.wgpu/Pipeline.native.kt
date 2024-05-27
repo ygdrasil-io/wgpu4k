@@ -7,7 +7,7 @@ actual class RenderPipeline : AutoCloseable {
         TODO("Not yet implemented")
     }
 
-    override fun close() {
+    actual override fun close() {
         TODO("Not yet implemented")
     }
 }
