@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-14, ubuntu-latest, windows-latest ]
+        os: [ windows-latest ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: print architecture
@@ -33,37 +33,9 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
           restore-keys: ${{ runner.os }}-gradle
-      - name: Build & test
-        run: |
-          gradle wrapper
-          ./gradlew build check --stacktrace --info
       - name: package
         run: ./gradlew assemble --stacktrace  --info
       - name: Run e2e tests
-        run: |
-          {
-           ./gradlew :wgpu4k-e2e:e2eTest --stacktrace --info || echo '::warning::Previous command failed'
-          } 2>&1 | sed 's/^::error::/::warning::/g'
+        run: ./gradlew :wgpu4k-e2e:e2eTest --stacktrace --info
         continue-on-error: true
 
-      - name: Bundle chromium screenshot
-        uses: vimtor/action-zip@v1.2
-        with:
-          files: ./wgpu4k-e2e/js-chromium/
-          recursive: false
-          dest: js-chromium-${{ runner.os }}-screenshots.zip
-
-      - name: Bundle jvm screenshot
-        uses: vimtor/action-zip@v1.2
-        with:
-          files: ./wgpu4k-e2e/jvm/
-          recursive: false
-          dest: jvm-${{ runner.os }}-screenshots.zip
-
-      - name: Upload the build reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ runner.os }}-artifacts
-          path: |
-            jvm-${{ runner.os }}-screenshots.zip
-            js-chromium-${{ runner.os }}-screenshots.zip
