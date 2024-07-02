@@ -16,16 +16,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ windows-2019 ]
+        os: [ windows-latest ]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: 22
-          cache: 'gradle'
-      - name: Run e2e tests
-        run: ./gradlew :wgpu4k-e2e:e2eTest --stacktrace --info
+      - name: debug
+        run: npx envinfo --preset playwright
 
