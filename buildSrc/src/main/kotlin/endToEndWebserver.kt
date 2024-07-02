@@ -1,8 +1,4 @@
 import com.microsoft.playwright.*
-import io.ktor.server.engine.*
-import io.ktor.server.http.content.*
-import io.ktor.server.netty.*
-import io.ktor.server.routing.*
 import org.gradle.api.logging.Logger
 import java.io.File
 import java.util.*
@@ -19,28 +15,14 @@ val scenes = listOf(
     "TexturedCubeScene" to listOf(0, 10, 50, 100),
 )
 
-fun endToEndWebserver(basePath: File): NettyApplicationEngine {
-    val pagePath = basePath.resolve("build")
-        .resolve("dist")
-        .resolve("js")
-        .resolve("productionExecutable")
-    println("serve page at ${pagePath.absolutePath}")
-    return embeddedServer(Netty, port = 9000) {
 
-        routing {
-            staticFiles(
-                "/",
-                pagePath
-            )
-        }
-    }.start(wait = false)
-}
 
 
 fun browser(projectDir: File, logger: Logger) {
     logger.info("starting browser")
 
     Playwright.create().use { playwright ->
+        logger.info("Playwright created")
         val browserTypes: List<BrowserType> = Arrays.asList(
             playwright.chromium(),
             // Not yet suported
