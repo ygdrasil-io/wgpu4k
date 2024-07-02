@@ -10,10 +10,6 @@ fun browser(logger: Logger) {
         logger.info("Playwright created")
         val browserTypes: List<BrowserType> = Arrays.asList(
             playwright.chromium(),
-            // Not yet suported
-            // playwright.webkit(),
-            // Not yet suported
-            //playwright.firefox()
         )
         for (browserType in browserTypes) {
             logger.info("will run test on ${browserType.name()}")
