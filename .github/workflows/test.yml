@@ -12,10 +12,11 @@ concurrency:
 
 jobs:
   tests:
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        os: [ windows-latest ]
+        os: [ windows-2019 ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
