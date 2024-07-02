@@ -9,5 +9,5 @@ repositories {
 }
 
 dependencies {
-	implementation("com.microsoft.playwright:playwright:1.41.0")
+	implementation("com.microsoft.playwright:playwright:1.45.0")
 }
