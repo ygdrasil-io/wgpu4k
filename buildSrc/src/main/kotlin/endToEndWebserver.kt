@@ -38,7 +38,7 @@ fun endToEndWebserver(basePath: File): NettyApplicationEngine {
 
 
 fun browser(projectDir: File, logger: Logger) {
-    logger.info("start to browser")
+    logger.info("starting browser")
 
     Playwright.create().use { playwright ->
         val browserTypes: List<BrowserType> = Arrays.asList(
@@ -49,7 +49,9 @@ fun browser(projectDir: File, logger: Logger) {
             //playwright.firefox()
         )
         for (browserType in browserTypes) {
+            logger.info("will run test on ${browserType.name()}")
             browserType.launch().use { browser ->
+                logger.info("browser started")
                 var renderEnded: Boolean
                 val context: BrowserContext = browser.newContext()
                 val page: Page = context.newPage()

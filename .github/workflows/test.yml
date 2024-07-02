@@ -33,9 +33,6 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
           restore-keys: ${{ runner.os }}-gradle
-      - name: package
-        run: ./gradlew assemble --stacktrace  --info
       - name: Run e2e tests
         run: ./gradlew :wgpu4k-e2e:e2eTest --stacktrace --info
-        continue-on-error: true
 
