@@ -29,5 +29,8 @@ jobs:
       - name: Run e2e tests
         env:
           DEBUG: pw:install
-        run: ./gradlew :wgpu4k-e2e:e2eTest --stacktrace --info
-
+        run: |
+          mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"
+          ./gradlew :wgpu4k-e2e:e2eTest --stacktrace --info
+          
+        
