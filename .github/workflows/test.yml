@@ -30,7 +30,7 @@ jobs:
         env:
           DEBUG: pw:install
         run: |
-          mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"
+        #mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"
           ./gradlew :wgpu4k-e2e:e2eTest --stacktrace --info
           
         
