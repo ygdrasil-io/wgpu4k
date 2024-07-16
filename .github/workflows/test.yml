@@ -27,5 +27,7 @@ jobs:
           java-version: 22
           cache: 'gradle'
       - name: Run e2e tests
+        env:
+          DEBUG: pw:install
         run: ./gradlew :wgpu4k-e2e:e2eTest --stacktrace --info
 
