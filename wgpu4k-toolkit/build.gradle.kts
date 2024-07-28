@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
@@ -21,9 +20,9 @@ val resourcesDirectory = project.file("src").resolve("jvmMain").resolve("resourc
 val buildNativeResourcesDirectory = project.file("build").resolve("native")
 
 java {
-	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(22))
-	}
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(22))
+    }
 }
 
 kotlin {
@@ -41,9 +40,14 @@ kotlin {
         browser()
     }
 
-    val nativeTargets = listOf<KotlinNativeTarget>(
+    val nativeTargets = listOf(
         macosArm64(),
         macosX64(),
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64(),
+        androidNativeX64(),
+        androidNativeArm64(),
     )
 
     nativeTargets.forEach { target ->
@@ -88,7 +92,13 @@ kotlin {
 
                 api("org.lwjgl:lwjgl:$lwjglVersion")
                 api("org.lwjgl:lwjgl-glfw:$lwjglVersion")
-                listOf("natives-windows", "natives-macos", "natives-macos-arm64", "natives-linux", "natives-linux-arm64").forEach { dependencyType ->
+                listOf(
+                    "natives-windows",
+                    "natives-macos",
+                    "natives-macos-arm64",
+                    "natives-linux",
+                    "natives-linux-arm64"
+                ).forEach { dependencyType ->
                     runtimeOnly("org.lwjgl:lwjgl:$lwjglVersion:$dependencyType")
                     runtimeOnly("org.lwjgl:lwjgl-glfw:$lwjglVersion:$dependencyType")
                 }
