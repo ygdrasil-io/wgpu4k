@@ -55,7 +55,7 @@ kotlin {
             languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
         }
 
-        val kotlinWrappersVersion = "1.0.0-pre.780"
+        val kotlinWrappersVersion = "1.0.0-pre.787"
 
         jsMain {
             dependencies {
