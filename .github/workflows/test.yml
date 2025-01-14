@@ -66,7 +66,7 @@ jobs:
 
       - name: Run e2e tests on Wayland
         if: matrix.os == 'ubuntu-latest'
-        run: weston -backend=headless-backend.so & ./gradlew :wgpu4k-e2e:e2eTest --stacktrace --info
+        run: weston --backend=headless-backend.so & ./gradlew :wgpu4k-e2e:e2eTest --stacktrace --info
 
 
       - name: Bundle chromium screenshot
