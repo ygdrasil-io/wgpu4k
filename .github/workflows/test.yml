@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: install dependencies
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt install -y libglfw3-dev
+        run: sudo apt install -y libglfw3-dev cage
       - name: set llvm Path On macos
         if: matrix.os == 'macos-14'
         run: echo "LIBCLANG_PATH=/Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr" >> $GITHUB_ENV
@@ -60,9 +60,14 @@ jobs:
         if: matrix.os != 'ubuntu-latest'
         run: ./gradlew :wgpu4k-e2e:e2eTest --stacktrace --info
 
-      - name: Run e2e tests
+      - name: Run e2e tests on X11
         if: matrix.os == 'ubuntu-latest'
         run: xvfb-run ./gradlew :wgpu4k-e2e:e2eTest --stacktrace --info
+
+      - name: Run e2e tests on Wayland
+        if: matrix.os == 'ubuntu-latest'
+        run: cage ./gradlew :wgpu4k-e2e:e2eTest --stacktrace --info
+
 
       - name: Bundle chromium screenshot
         uses: vimtor/action-zip@v1.2
