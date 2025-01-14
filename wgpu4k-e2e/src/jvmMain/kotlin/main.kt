@@ -6,7 +6,6 @@ private val logger = KotlinLogging.logger {}
 
 
 fun main() {
-    println("Session type ${System.getProperty("XDG_SESSION_TYPE")}")
     runBlocking {
         try {
             captureScene()

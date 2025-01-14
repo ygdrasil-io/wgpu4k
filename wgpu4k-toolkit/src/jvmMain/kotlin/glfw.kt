@@ -8,8 +8,18 @@ import ffi.NativeAddress
 import io.ygdrasil.webgpu.WGPU.Companion.createInstance
 import io.ygdrasil.webgpu.internal.Os
 import io.ygdrasil.webgpu.internal.Platform
-import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.glfw.GLFW.GLFW_CLIENT_API
+import org.lwjgl.glfw.GLFW.GLFW_FALSE
+import org.lwjgl.glfw.GLFW.GLFW_NO_API
+import org.lwjgl.glfw.GLFW.GLFW_RESIZABLE
+import org.lwjgl.glfw.GLFW.GLFW_VISIBLE
+import org.lwjgl.glfw.GLFW.glfwCreateWindow
+import org.lwjgl.glfw.GLFW.glfwDestroyWindow
+import org.lwjgl.glfw.GLFW.glfwInit
+import org.lwjgl.glfw.GLFW.glfwWindowHint
 import org.lwjgl.glfw.GLFWNativeCocoa.glfwGetCocoaWindow
+import org.lwjgl.glfw.GLFWNativeWayland.glfwGetWaylandDisplay
+import org.lwjgl.glfw.GLFWNativeWayland.glfwGetWaylandWindow
 import org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window
 import org.lwjgl.glfw.GLFWNativeX11.glfwGetX11Display
 import org.lwjgl.glfw.GLFWNativeX11.glfwGetX11Window
@@ -18,7 +28,12 @@ import org.rococoa.ID
 import org.rococoa.Rococoa
 import java.lang.foreign.MemorySegment
 
-suspend fun glfwContextRenderer(width: Int = 1, height: Int = 1, title: String = "", deferredRendering: Boolean = false): GLFWContext {
+suspend fun glfwContextRenderer(
+    width: Int = 1,
+    height: Int = 1,
+    title: String = "",
+    deferredRendering: Boolean = false
+): GLFWContext {
 
     glfwInit()
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
@@ -64,16 +79,25 @@ class GLFWContext(
 }
 
 private fun WGPU.getNativeSurface(window: Long): NativeSurface = when (Platform.os) {
-    Os.Linux -> {
-        val display = glfwGetX11Display().toNativeAddress()
-        val x11_window = glfwGetX11Window(window).toULong()
-        getSurfaceFromX11Window(display, x11_window) ?: error("fail to get surface on Linux")
+    Os.Linux -> when {
+        isRunningOnX11() -> {
+            val display = glfwGetX11Display().toNativeAddress()
+            val x11_window = glfwGetX11Window(window).toULong()
+            getSurfaceFromX11Window(display, x11_window) ?: error("fail to get surface on Linux")
+        }
+        else -> {
+            val display = glfwGetWaylandDisplay().toNativeAddress()
+            val wayland_window = glfwGetWaylandWindow(window).toNativeAddress()
+            getSurfaceFromWaylandWindow(display, wayland_window)
+        }
     }
+
     Os.Window -> {
         val hwnd = glfwGetWin32Window(window).toNativeAddress()
         val hinstance = Kernel32.INSTANCE.GetModuleHandle(null).pointer.toNativeAddress()
         getSurfaceFromWindows(hinstance, hwnd) ?: error("fail to get surface on Windows")
     }
+
     Os.MacOs -> {
         val nsWindowPtr = glfwGetCocoaWindow(window)
         val nswindow = Rococoa.wrap(ID.fromLong(nsWindowPtr), NSWindow::class.java)
@@ -84,6 +108,7 @@ private fun WGPU.getNativeSurface(window: Long): NativeSurface = when (Platform.
     }
 } ?: error("fail to get surface")
 
+private fun isRunningOnX11(): Boolean = Platform.os == Os.Linux && glfwGetX11Display() != 0L
 
 private fun Long.toPointer(): Pointer = Pointer(this)
 
