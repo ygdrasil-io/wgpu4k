@@ -83,14 +83,14 @@ private fun WGPU.getNativeSurface(window: Long): NativeSurface = when (Platform.
         isRunningOnX11() -> {
             val display = glfwGetX11Display().toNativeAddress()
             val x11_window = glfwGetX11Window(window).toULong()
-            getSurfaceFromX11Window(display, x11_window) ?: error("fail to get surface on Linux")
+            getSurfaceFromX11Window(display, x11_window)
         }
         else -> {
             val display = glfwGetWaylandDisplay().toNativeAddress()
             val wayland_window = glfwGetWaylandWindow(window).toNativeAddress()
             getSurfaceFromWaylandWindow(display, wayland_window)
         }
-    }
+    } ?: error("fail to get surface on Linux")
 
     Os.Window -> {
         val hwnd = glfwGetWin32Window(window).toNativeAddress()
@@ -104,9 +104,9 @@ private fun WGPU.getNativeSurface(window: Long): NativeSurface = when (Platform.
         nswindow.contentView()?.setWantsLayer(true)
         val layer = CAMetalLayer.layer()
         nswindow.contentView()?.setLayer(layer.id().toLong().toPointer())
-        getSurfaceFromMetalLayer(layer.id().toLong().toNativeAddress())
+        getSurfaceFromMetalLayer(layer.id().toLong().toNativeAddress()) ?: error("fail to get surface on MacOS")
     }
-} ?: error("fail to get surface")
+}
 
 private fun isRunningOnX11(): Boolean = Platform.os == Os.Linux && glfwGetX11Display() != 0L
 
