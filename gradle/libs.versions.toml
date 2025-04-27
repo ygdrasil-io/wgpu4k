@@ -15,8 +15,8 @@ android-native-helper = "0.0.1"
 glfw-native = "0.0.1"
 
 # WebGPU
-wgpu4k-native = "v24.0.2"
-webgpu-ktypes = "0.0.5-SNAPSHOT"
+wgpu4k-native = "v25.0.1-SNAPSHOT"
+webgpu-ktypes = "0.0.5"
 
 # Logging
 kotlin-logging = "7.0.3"
