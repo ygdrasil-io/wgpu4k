@@ -97,7 +97,7 @@ class ParticlesScene(wgpuContext: WGPUContext, assetManager: AssetManager) : Sce
         particlesBuffer = device.createBuffer(
             BufferDescriptor(
                 size = (numParticles * particleInstanceByteSize).toULong(),
-                usage = setOf(GPUBufferUsage.Vertex, GPUBufferUsage.Storage),
+                usage = GPUBufferUsage.Vertex or GPUBufferUsage.Storage,
             )
         ).bind()
 
@@ -187,7 +187,7 @@ class ParticlesScene(wgpuContext: WGPUContext, assetManager: AssetManager) : Sce
             TextureDescriptor(
                 size = Extent3D(renderingContext.width, renderingContext.height),
                 format = GPUTextureFormat.Depth24Plus,
-                usage = setOf(GPUTextureUsage.RenderAttachment),
+                usage = GPUTextureUsage.RenderAttachment,
             )
         )
 
@@ -200,7 +200,7 @@ class ParticlesScene(wgpuContext: WGPUContext, assetManager: AssetManager) : Sce
         uniformBuffer = device.createBuffer(
             BufferDescriptor(
                 size = uniformBufferSize.toULong(),
-                usage = setOf(GPUBufferUsage.Uniform, GPUBufferUsage.CopyDst),
+                usage = GPUBufferUsage.Uniform or GPUBufferUsage.CopyDst,
             )
         ).bind()
 
@@ -242,7 +242,7 @@ class ParticlesScene(wgpuContext: WGPUContext, assetManager: AssetManager) : Sce
         quadVertexBuffer = device.createBuffer(
             BufferDescriptor(
                 size = 6uL * 2uL * 4uL, // 6x vec2f
-                usage = setOf(GPUBufferUsage.Vertex),
+                usage = GPUBufferUsage.Vertex,
                 mappedAtCreation = true,
             )
         )
@@ -277,12 +277,11 @@ class ParticlesScene(wgpuContext: WGPUContext, assetManager: AssetManager) : Sce
                 mipLevelCount = numMipLevels,
                 format = GPUTextureFormat.RGBA8Unorm,
                 usage =
-                    setOf(
-                        GPUTextureUsage.TextureBinding,
-                        GPUTextureUsage.StorageBinding,
-                        GPUTextureUsage.CopyDst,
+                        GPUTextureUsage.TextureBinding or
+                        GPUTextureUsage.StorageBinding or
+                        GPUTextureUsage.CopyDst or
                         GPUTextureUsage.RenderAttachment
-                    ),
+                    ,
             )
         )
         @Suppress("DEPRECATION")
@@ -325,19 +324,19 @@ class ParticlesScene(wgpuContext: WGPUContext, assetManager: AssetManager) : Sce
         val probabilityMapUBOBuffer = device.createBuffer(
             BufferDescriptor(
                 size = probabilityMapUBOBufferSize.toULong(),
-                usage = setOf(GPUBufferUsage.Uniform, GPUBufferUsage.CopyDst),
+                usage = GPUBufferUsage.Uniform or GPUBufferUsage.CopyDst,
             )
         )
         val buffer_a = device.createBuffer(
             BufferDescriptor(
                 size = textureWidth * textureHeight * 4uL,
-                usage = setOf(GPUBufferUsage.Storage),
+                usage = GPUBufferUsage.Storage,
             )
         )
         val buffer_b = device.createBuffer(
             BufferDescriptor(
                 size = textureWidth * textureHeight * 4uL,
-                usage = setOf(GPUBufferUsage.Storage),
+                usage = GPUBufferUsage.Storage,
             )
         )
         device.queue.writeBuffer(
@@ -414,7 +413,7 @@ class ParticlesScene(wgpuContext: WGPUContext, assetManager: AssetManager) : Sce
         simulationUBOBuffer = device.createBuffer(
             BufferDescriptor(
                 size = simulationUBOBufferSize.toULong(),
-                usage = setOf(GPUBufferUsage.Uniform, GPUBufferUsage.CopyDst),
+                usage = GPUBufferUsage.Uniform or GPUBufferUsage.CopyDst,
             )
         )
 

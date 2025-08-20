@@ -25,12 +25,12 @@ actual class Buffer(val handler: WGPUBuffer) : GPUBuffer {
     }
 
     actual override suspend fun mapAsync(
-        mode: GPUMapModeFlags,
+        mode: GPUMapMode,
         offset: GPUSize64,
         size: GPUSize64?
     ): Result<Unit> = when (size) {
-        null -> handler.mapAsync(mode.toFlagInt().asJsNumber(), offset.asJsNumber())
-        else -> handler.mapAsync(mode.toFlagInt().asJsNumber(), offset.asJsNumber(), size.asJsNumber())
+        null -> handler.mapAsync(mode.value.asJsNumber(), offset.asJsNumber())
+        else -> handler.mapAsync(mode.value.asJsNumber(), offset.asJsNumber(), size.asJsNumber())
     }.wait<Unit>().let { Result.success(Unit) }
 
     actual override fun unmap() {

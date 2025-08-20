@@ -66,7 +66,7 @@ class HelloTriangleRotatingScene(wgpuContext: WGPUContext) : Scene(wgpuContext) 
             BufferDescriptor(
                 label = "Uniform Buffer",
                 size = uniformBufferSize,
-                usage = setOf(GPUBufferUsage.Uniform, GPUBufferUsage.CopyDst)
+                usage = GPUBufferUsage.Uniform or GPUBufferUsage.CopyDst
             )
         ).bind()
 

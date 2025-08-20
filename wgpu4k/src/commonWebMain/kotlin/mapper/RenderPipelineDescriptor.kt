@@ -31,7 +31,6 @@ import io.ygdrasil.webgpu.asJsString
 import io.ygdrasil.webgpu.castAs
 import io.ygdrasil.webgpu.createJsObject
 import io.ygdrasil.webgpu.mapJsArray
-import io.ygdrasil.webgpu.toFlagInt
 
 internal fun map(input: GPURenderPipelineDescriptor): WGPURenderPipelineDescriptor =
     createJsObject<WGPURenderPipelineDescriptor>().apply {
@@ -119,7 +118,7 @@ private fun map(input: GPUColorTargetState): WGPUColorTargetState =
     createJsObject<WGPUColorTargetState>().apply {
         format = input.format.value
         input.blend?.let { blend = map(it) }
-        writeMask = input.writeMask.toFlagInt().asJsNumber()
+        writeMask = input.writeMask.value.asJsNumber()
     }
 
 private fun map(input: GPUBlendState): WGPUBlendState =

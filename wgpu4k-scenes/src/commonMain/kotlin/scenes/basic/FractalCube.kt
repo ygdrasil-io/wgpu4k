@@ -70,7 +70,7 @@ class FractalCubeScene(wgpuContext: WGPUContext) : Scene(wgpuContext) {
 		verticesBuffer = device.createBuffer(
 			BufferDescriptor(
 				size = (cubeVertexArray.size * Float.SIZE_BYTES).toULong(),
-				usage = setOf(GPUBufferUsage.Vertex),
+				usage = GPUBufferUsage.Vertex,
 				mappedAtCreation = true
 			)
 		)
@@ -135,7 +135,7 @@ class FractalCubeScene(wgpuContext: WGPUContext) : Scene(wgpuContext) {
 			TextureDescriptor(
 				size = Extent3D(renderingContext.width, renderingContext.height),
 				format = GPUTextureFormat.Depth24Plus,
-				usage = setOf(GPUTextureUsage.RenderAttachment),
+				usage = GPUTextureUsage.RenderAttachment,
 			)
 		).bind()
 
@@ -143,7 +143,7 @@ class FractalCubeScene(wgpuContext: WGPUContext) : Scene(wgpuContext) {
 		uniformBuffer = device.createBuffer(
 			BufferDescriptor(
 				size = uniformBufferSize,
-				usage = setOf(GPUBufferUsage.Uniform, GPUBufferUsage.CopyDst)
+				usage = GPUBufferUsage.Uniform or GPUBufferUsage.CopyDst
 			)
 		).bind()
 
@@ -153,7 +153,7 @@ class FractalCubeScene(wgpuContext: WGPUContext) : Scene(wgpuContext) {
 			TextureDescriptor(
 				size = Extent3D(renderingContext.width, renderingContext.height),
 				format = renderingContext.textureFormat,
-				usage = setOf(GPUTextureUsage.TextureBinding, GPUTextureUsage.CopyDst),
+				usage = GPUTextureUsage.TextureBinding or GPUTextureUsage.CopyDst,
 			)
 		)
 

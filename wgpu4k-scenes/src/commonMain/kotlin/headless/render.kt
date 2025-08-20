@@ -45,7 +45,7 @@ suspend fun captureScene() {
                 val outputStagingBuffer = context.device.createBuffer(
                     BufferDescriptor(
                         size = (textureData.size * Int.SIZE_BYTES).toULong(),
-                        usage = setOf(GPUBufferUsage.CopyDst, GPUBufferUsage.MapRead),
+                        usage = GPUBufferUsage.CopyDst or GPUBufferUsage.MapRead,
                         mappedAtCreation = false,
                     )
                 )
@@ -73,7 +73,7 @@ suspend fun captureScene() {
                 logger.info { "Copying texture to staging buffer" }
                 context.device.queue.submit(listOf(commandEncoder.finish()))
                 logger.info { "Mapping ..." }
-                outputStagingBuffer.mapAsync(setOf(GPUMapMode.Read))
+                outputStagingBuffer.mapAsync(GPUMapMode.Read)
                 outputStagingBuffer.mapInto(buffer = textureData)
                 val image = Bitmap32(
                     width = renderingContext.width.toInt(),
