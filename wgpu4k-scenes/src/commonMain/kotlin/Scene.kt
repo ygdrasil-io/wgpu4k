@@ -10,6 +10,7 @@ import io.ygdrasil.webgpu.TextureDescriptor
 import io.ygdrasil.webgpu.WGPUContext
 import io.ygdrasil.webgpu.examples.scenes.basic.CubemapScene
 import io.ygdrasil.webgpu.examples.scenes.basic.FractalCubeScene
+import io.ygdrasil.webgpu.examples.scenes.basic.HardCodedTextureScene
 import io.ygdrasil.webgpu.examples.scenes.basic.HelloTriangleMSAAScene
 import io.ygdrasil.webgpu.examples.scenes.basic.HelloTriangleRotatingScene
 import io.ygdrasil.webgpu.examples.scenes.basic.HelloTriangleScene
@@ -23,7 +24,7 @@ suspend fun loadScenes(wgpuContext: WGPUContext, resourceBasePath: String = ""):
     val textureFormat = wgpuContext.renderingContext.textureFormat
     val assetManager = genericAssetManager(textureFormat, resourceBasePath)
     return listOf(
-        HelloTriangleScene(wgpuContext),
+        HardCodedTextureScene(wgpuContext),
         HelloTriangleMSAAScene(wgpuContext),
         HelloTriangleRotatingScene(wgpuContext),
         RotatingCubeScene(wgpuContext),
